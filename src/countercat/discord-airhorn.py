@@ -114,7 +114,7 @@ class MyClient(discord.Client):
                     self.avg_rssi = sum(dq) / len(dq)
                     logging.info('rssi: %d sslh %d' % (avg_rssi, seconds_since_last_honk))
                 await asyncio.sleep(0.01)
-        except asyncio.exceptions.CancelledError:
+        except asyncio.CancelledError:
             logging.info("closing the BLE loop")
             return
         except:
