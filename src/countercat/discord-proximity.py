@@ -83,4 +83,4 @@ class MyClient(discord.Client):
 
 
 client = MyClient()
-client.run('discord_bot_key')
+client.run('OTQ4NzQxNDcxMTAyNzEzODg2.YiAOWQ.bUx-lXD5efKNq_9E_9MSCVNqx4g')

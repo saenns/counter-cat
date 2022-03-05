@@ -43,4 +43,4 @@ class MyClient(discord.Client):
             await ch.send('2.0s')
 
 client = MyClient()
-client.run('discord_bot_key')
+client.run('OTQ2OTYyNTU4NjUxMzU5MzIy.YhmVmw.ifr8FNKD_wWz5BlBpINniZF1A8s')
