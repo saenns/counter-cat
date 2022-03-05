@@ -102,7 +102,7 @@ class MyClient(discord.Client):
             self.sock = bluez.hci_open_dev(dev_id)
             enable_le_scan(self.sock, filter_duplicates=False)
             parse_le_advertising_events_init(self.sock)
-            while not self.is_closed():
+            while True:
                 tpl =  parse_le_advertising_events_once(self.sock)
                 if (tpl):
                     mac_addr_str, adv_type, rssi = tpl

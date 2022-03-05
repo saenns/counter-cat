@@ -56,7 +56,7 @@ class MyClient(discord.Client):
             enable_le_scan(self.sock, filter_duplicates=False)
             parse_le_advertising_events_init(self.sock)
             dq = deque()
-            while not self.is_closed():
+            while True:
                 tpl =  parse_le_advertising_events_once(self.sock)
                 if (tpl):
                     mac_addr_str, adv_type, rssi = tpl
