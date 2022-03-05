@@ -31,6 +31,7 @@ class MyClient(discord.Client):
         self.ch_ft = asyncio.Future()
         self.dq = deque()
         self.time_of_last_honk = time.time() - 50
+        self.ch_ft = asyncio.Future()
 
     def blow_horn(self, secs):
         GPIO.output(pin, 1)
@@ -39,7 +40,8 @@ class MyClient(discord.Client):
         self.time_of_last_honk = time.time()
 
     async def on_ready(self):
-        ch = client.get_channel(929738879563612244)
+        self.ch = client.get_channel(929738879563612244)
+        self.ch_ft.set_result(self.ch)
         await ch.send('honk when you\'re ready')
 
     async def on_message(self, message):
