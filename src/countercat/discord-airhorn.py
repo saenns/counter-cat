@@ -42,7 +42,7 @@ class MyClient(discord.Client):
     async def on_ready(self):
         self.ch = client.get_channel(929738879563612244)
         self.ch_ft.set_result(self.ch)
-        await ch.send('honk when you\'re ready')
+        await self.ch.send('honk when you\'re ready')
 
     async def on_message(self, message):
         ch = message.channel
