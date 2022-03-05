@@ -52,7 +52,7 @@ class MyClient(discord.Client):
         if message.bot:
             # lets double check to prevent false positives
             seconds_since_last_honk = time.time() - self.time_of_last_honk
-            if len(dq) == lookback_window and avg_rssi >= -40 and seconds_since_last_honk > cooldown_seconds:
+            if len(self.dq) == lookback_window and avg_rssi >= -40 and seconds_since_last_honk > cooldown_seconds:
                 logging.info('honking the horn')
                 await self.ch.send('confirmed proximity rssi: %d' % self.avg_rssi)
             else:
@@ -107,11 +107,11 @@ class MyClient(discord.Client):
                 if (tpl):
                     mac_addr_str, adv_type, rssi = tpl
                 if mac_addr_str == '01:B6:EC:C6:44:9B':
-                    dq.appendleft(rssi)
+                    self.dq.appendleft(rssi)
                     lookback_window = 2
-                    if len(dq) > lookback_window:
-                      dq.pop()
-                    self.avg_rssi = sum(dq) / len(dq)
+                    if len(self.dq) > lookback_window:
+                      self.dq.pop()
+                    self.avg_rssi = sum(self.dq) / len(self.dq)
                     logging.info('rssi: %d sslh %d' % (avg_rssi, seconds_since_last_honk))
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:
