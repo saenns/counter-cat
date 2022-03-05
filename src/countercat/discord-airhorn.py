@@ -43,4 +43,4 @@ class MyClient(discord.Client):
             await ch.send('2.0s')
 
 client = MyClient()
-client.run('discord_bot_key')
+client.run('[REVOKED_DISCORD_BOT_TOKEN]')
