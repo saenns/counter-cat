@@ -74,7 +74,7 @@ class MyClient(discord.Client):
                         time_of_last_honk = time.time()
                         await self.ch.send('h4')
                 await asyncio.sleep(0.01)
-        except asyncio.exceptions.CancelledError:
+        except asyncio.CancelledError:
             logging.info("closing the BLE loop")
             return
         except:
