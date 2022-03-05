@@ -112,6 +112,7 @@ class MyClient(discord.Client):
                     if len(self.dq) > lookback_window:
                       self.dq.pop()
                     self.avg_rssi = sum(self.dq) / len(self.dq)
+                    seconds_since_last_honk = time.time() - self.time_of_last_honk
                     logging.info('rssi: %d sslh %d' % (self.avg_rssi, seconds_since_last_honk))
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:
