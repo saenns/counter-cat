@@ -12,7 +12,7 @@ import bluetooth._bluetooth as bluez
 import logging
 
 from collections import deque
-from bluetooth_utils import (toggle_device,
+from bluetooth_common import (toggle_device,
                              enable_le_scan, parse_le_advertising_events,parse_le_advertising_events_init,parse_le_advertising_events_once,
                              disable_le_scan, raw_packet_to_str)
 
