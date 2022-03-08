@@ -139,5 +139,6 @@ class MyClient(discord.Client):
             raise
 
 
-client = MyClient()
-client.run('[REVOKED_DISCORD_BOT_TOKEN]')
+if __name__ == "__main__":
+    client = MyClient(sys.argv)
+    client.run('[REVOKED_DISCORD_BOT_TOKEN]')
