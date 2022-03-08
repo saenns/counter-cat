@@ -127,9 +127,9 @@ class MyClient(discord.Client):
                     self.avg_rssi = sum(self.dq) / len(self.dq)
                     seconds_since_last_honk = time.time() - self.time_of_last_honk
                     logging.info('rssi: %d sslh %d' % (self.avg_rssi, seconds_since_last_honk))
-                    if self.role == 'proximity' and len(self.dq) == lookback_window and avg_rssi >= -40: # and seconds_since_last_honk > cooldown_seconds:
+                    if self.role == 'proximity' and len(self.dq) == lookback_window and self.avg_rssi >= -40: # and seconds_since_last_honk > cooldown_seconds:
                         logging.info('remote honking the horn')
-                        await self.ch.send('rssi: %d' % avg_rssi)
+                        await self.ch.send('rssi: %d' % self.avg_rssi)
                         self.time_of_last_honk = time.time()
                         await self.ch.send('h3')
                 await asyncio.sleep(0.01)
