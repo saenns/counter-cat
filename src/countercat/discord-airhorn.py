@@ -60,7 +60,9 @@ class MyClient(discord.Client):
             await self.honker_on_message(message)
 
     def avg_rssi(self):
-        return sum(self.dq) / len(self.dq)
+        if self.dq:
+            return sum(self.dq) / len(self.dq)
+        return -100000
 
     async def common_on_message(self, message):
         ch = message.channel
