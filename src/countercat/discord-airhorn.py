@@ -42,7 +42,7 @@ class MyClient(discord.Client):
         self.armed = True
 
     def blow_horn(self, secs):
-        if armed:
+        if self.armed:
             GPIO.output(pin, 1)
             time.sleep(secs)
             GPIO.output(pin, 0)
