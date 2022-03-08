@@ -32,6 +32,9 @@ class MyClient(discord.Client):
         self.dq = deque()
         self.time_of_last_honk = time.time() - 50
         self.ch_ft = asyncio.Future()
+        self.role = kwargs['role']
+        if (role != 'honker' and role != 'proximity'):
+            raise RuntimeError('unknown role ' + role)
 
     def blow_horn(self, secs):
         GPIO.output(pin, 1)
@@ -45,11 +48,23 @@ class MyClient(discord.Client):
         await self.ch.send('honk when you\'re ready')
 
     async def on_message(self, message):
-        ch = message.channel
         # don't respond to ourselves
         if message.author == self.user:
             return
-        if message.bot:
+        await self.common_on_message(message)
+        if (self.role == 'honker'):
+            await self.honker_on_message(self, message)
+
+    async def common_on_message(self, message):
+        ch = message.channel
+        if message.content == 'ping' || message.content == 'Ping':
+            await ch.send('pong')
+        if message.content == 'stats' || message.content == 'Stats':
+            await ch.send('rssis: ' + ','.join(dq) + str(self.avg_rssi))
+
+    async def honker_on_message(self, message):
+        ch = message.channel
+        if message.author.bot:
             # lets double check to prevent false positives
             seconds_since_last_honk = time.time() - self.time_of_last_honk
             if len(self.dq) == lookback_window and self.avg_rssi >= -40 and seconds_since_last_honk > cooldown_seconds:
@@ -59,29 +74,24 @@ class MyClient(discord.Client):
                 await self.ch.send('not close enough rssi: %d' % self.avg_rssi)
                 return
 
-        if message.content == 'ping':
-            await ch.send('pong')
-        if message.content == 'h1':
+        if message.content == 'h1' || mesesage.content == 'H1':
             blow_horn(0.1)
             await ch.send('0.1s')
-        elif message.content == 'h2':
+        elif message.content == 'h2' || mesesage.content == 'H2':
             blow_horn(0.25)
             await ch.send('0.25s')
-        elif message.content == 'h3':
+        elif message.content == 'h3' || mesesage.content == 'H3':
             blow_horn(0.5)
             await ch.send('0.5s')
-        elif message.content == 'h4':
+        elif message.content == 'h4' || mesesage.content == 'H4':
             blow_horn(1.0)
             await ch.send('1.0s')
-        elif message.content == 'h5':
+        elif message.content == 'h5' || mesesage.content == 'H5':
             blow_horn(2.0)
             await ch.send('2.0s')
 
     async def close(self):
         await self.ch.send('horn honker disconnecting')
-        await super().close()
-
-    async def on_disconnect(self):
         logging.info('cleaning up BLE')
         self.bg_task.cancel()
         try:
@@ -89,6 +99,7 @@ class MyClient(discord.Client):
         except asyncio.CancelledError:
             logging.exception('cancelled error')
         disable_le_scan(self.sock)
+        await super().close()
 
     async def ble_loop(self):
         try:
@@ -114,6 +125,11 @@ class MyClient(discord.Client):
                     self.avg_rssi = sum(self.dq) / len(self.dq)
                     seconds_since_last_honk = time.time() - self.time_of_last_honk
                     logging.info('rssi: %d sslh %d' % (self.avg_rssi, seconds_since_last_honk))
+                    if self.role == 'proximity' and len(dq) == lookback_window and avg_rssi >= -40: # and seconds_since_last_honk > cooldown_seconds:
+                        logging.info('remote honking the horn')
+                        await self.ch.send('rssi: %d' % avg_rssi)
+                        self.time_of_last_honk = time.time()
+                        await self.ch.send('h3')
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:
             logging.info("closing the BLE loop")
