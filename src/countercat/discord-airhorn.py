@@ -4,6 +4,7 @@
 Simple BLE forever-scan example, that prints all the detected
 LE advertisement packets, and prints a colored diff of data on data changes.
 """
+import argparse
 import RPi.GPIO as GPIO
 import asyncio
 import discord
@@ -23,16 +24,17 @@ pin = 4
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(pin, GPIO.OUT)
 
+
 class MyClient(discord.Client):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, role):
         super().__init__(*args, **kwargs)
         self.bg_task = self.loop.create_task(self.ble_loop())
         self.ch_ft = asyncio.Future()
         self.dq = deque()
         self.time_of_last_honk = time.time() - 50
         self.ch_ft = asyncio.Future()
-        self.role = kwargs['role']
+        self.role = role
         if (role != 'honker' and role != 'proximity'):
             raise RuntimeError('unknown role ' + role)
 
@@ -140,5 +142,8 @@ class MyClient(discord.Client):
 
 
 if __name__ == "__main__":
-    client = MyClient(sys.argv)
+    parser = argparse.ArgumentParser(description='Discord chatbot to monitor proximity and operate the air horn remotely')
+    parser.add_argument('role', type=str, choices=['proximity', 'honker'], help='whether to act as remote proximity sensor or the horn operator')
+    args = parser.parse_args(sys.argv)
+    client = MyClient(args.role)
     client.run('OTQ2OTYyNTU4NjUxMzU5MzIy.YhmVmw.ifr8FNKD_wWz5BlBpINniZF1A8s')
