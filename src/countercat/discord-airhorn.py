@@ -59,23 +59,26 @@ class MyClient(discord.Client):
         if (self.role == 'honker'):
             await self.honker_on_message(message)
 
+    def avg_rssi(self):
+        return sum(self.dq) / len(self.dq)
+
     async def common_on_message(self, message):
         ch = message.channel
         if message.content in ['ping', 'Ping']:
             await ch.send('role: ' + self.role + ' pong')
         if message.content in ['stats', 'Stats']:
-            await ch.send('role: ' + self.role + ' rssis: ' + ','.join(map(str, self.dq)) + ' avg: ' + str(self.avg_rssi))
+            await ch.send('role: ' + self.role + ' rssis: ' + ','.join(map(str, self.dq)) + ' avg: ' + str(self.avg_rssi()))
 
     async def honker_on_message(self, message):
         ch = message.channel
         if message.author.bot:
             # lets double check to prevent false positives
             seconds_since_last_honk = time.time() - self.time_of_last_honk
-            if len(self.dq) == self.lookback_window and self.avg_rssi >= -40 and seconds_since_last_honk > self.cooldown_seconds:
+            if len(self.dq) == self.lookback_window and self.avg_rssi() >= -40 and seconds_since_last_honk > self.cooldown_seconds:
                 logging.info('honking the horn')
-                await self.ch.send('confirmed proximity rssi: %d' % self.avg_rssi)
+                await self.ch.send('confirmed proximity rssi: %d' % self.avg_rssi())
             else:
-                await self.ch.send('not close enough rssi: %d' % self.avg_rssi)
+                await self.ch.send('not close enough rssi: %d' % self.avg_rssi())
                 return
 
         if message.content in ['h1', 'H1']:
@@ -124,12 +127,11 @@ class MyClient(discord.Client):
                     self.dq.appendleft(rssi)
                     if len(self.dq) > self.lookback_window:
                         self.dq.pop()
-                    self.avg_rssi = sum(self.dq) / len(self.dq)
                     seconds_since_last_honk = time.time() - self.time_of_last_honk
-                    logging.info('rssi: %d sslh %d' % (self.avg_rssi, seconds_since_last_honk))
-                    if self.role == 'proximity' and len(self.dq) == self.lookback_window and self.avg_rssi >= -40: # and seconds_since_last_honk > self.cooldown_seconds:
+                    logging.info('rssi: %d sslh %d' % (self.avg_rssi(), seconds_since_last_honk))
+                    if self.role == 'proximity' and len(self.dq) == self.lookback_window and self.avg_rssi() >= -40: # and seconds_since_last_honk > self.cooldown_seconds:
                         logging.info('remote honking the horn')
-                        await self.ch.send('rssi: %d' % self.avg_rssi)
+                        await self.ch.send('rssi: %d' % self.avg_rssi())
                         self.time_of_last_honk = time.time()
                         await self.ch.send('h3')
                 await asyncio.sleep(0.01)
