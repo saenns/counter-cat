@@ -139,5 +139,6 @@ class MyClient(discord.Client):
             raise
 
 
-client = MyClient()
-client.run('OTQ2OTYyNTU4NjUxMzU5MzIy.YhmVmw.ifr8FNKD_wWz5BlBpINniZF1A8s')
+if __name__ == "__main__":
+    client = MyClient(sys.argv)
+    client.run('OTQ2OTYyNTU4NjUxMzU5MzIy.YhmVmw.ifr8FNKD_wWz5BlBpINniZF1A8s')
