@@ -158,6 +158,7 @@ class MyClient(discord.Client):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Discord chatbot to monitor proximity and operate the air horn remotely')
     parser.add_argument('--role', type=str, choices=['proximity', 'honker'], help='whether to act as remote proximity sensor or the horn operator')
+    parser.add_argument('--token', type=str, required=True, help='Discord bot token')
     args = parser.parse_args()
     client = MyClient(args.role)
-    client.run('OTQ2OTYyNTU4NjUxMzU5MzIy.YhmVmw.ifr8FNKD_wWz5BlBpINniZF1A8s')
+    client.run(args.token)
