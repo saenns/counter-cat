@@ -62,7 +62,7 @@ class MyClient(discord.Client):
         if message.content == 'ping' or message.content == 'Ping':
             await ch.send('pong')
         if message.content == 'stats' or message.content == 'Stats':
-            await ch.send('rssis: ' + ','.join(dq) + str(self.avg_rssi))
+            await ch.send('rssis: ' + ','.join(self.dq) + str(self.avg_rssi))
 
     async def honker_on_message(self, message):
         ch = message.channel
@@ -127,7 +127,7 @@ class MyClient(discord.Client):
                     self.avg_rssi = sum(self.dq) / len(self.dq)
                     seconds_since_last_honk = time.time() - self.time_of_last_honk
                     logging.info('rssi: %d sslh %d' % (self.avg_rssi, seconds_since_last_honk))
-                    if self.role == 'proximity' and len(dq) == lookback_window and avg_rssi >= -40: # and seconds_since_last_honk > cooldown_seconds:
+                    if self.role == 'proximity' and len(self.dq) == lookback_window and avg_rssi >= -40: # and seconds_since_last_honk > cooldown_seconds:
                         logging.info('remote honking the horn')
                         await self.ch.send('rssi: %d' % avg_rssi)
                         self.time_of_last_honk = time.time()
