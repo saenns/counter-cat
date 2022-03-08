@@ -57,9 +57,9 @@ class MyClient(discord.Client):
 
     async def common_on_message(self, message):
         ch = message.channel
-        if message.content == 'ping' || message.content == 'Ping':
+        if message.content == 'ping' or message.content == 'Ping':
             await ch.send('pong')
-        if message.content == 'stats' || message.content == 'Stats':
+        if message.content == 'stats' or message.content == 'Stats':
             await ch.send('rssis: ' + ','.join(dq) + str(self.avg_rssi))
 
     async def honker_on_message(self, message):
@@ -74,19 +74,19 @@ class MyClient(discord.Client):
                 await self.ch.send('not close enough rssi: %d' % self.avg_rssi)
                 return
 
-        if message.content == 'h1' || mesesage.content == 'H1':
+        if message.content == 'h1' or mesesage.content == 'H1':
             blow_horn(0.1)
             await ch.send('0.1s')
-        elif message.content == 'h2' || mesesage.content == 'H2':
+        elif message.content == 'h2' or mesesage.content == 'H2':
             blow_horn(0.25)
             await ch.send('0.25s')
-        elif message.content == 'h3' || mesesage.content == 'H3':
+        elif message.content == 'h3' or mesesage.content == 'H3':
             blow_horn(0.5)
             await ch.send('0.5s')
-        elif message.content == 'h4' || mesesage.content == 'H4':
+        elif message.content == 'h4' or mesesage.content == 'H4':
             blow_horn(1.0)
             await ch.send('1.0s')
-        elif message.content == 'h5' || mesesage.content == 'H5':
+        elif message.content == 'h5' or mesesage.content == 'H5':
             blow_horn(2.0)
             await ch.send('2.0s')
 
