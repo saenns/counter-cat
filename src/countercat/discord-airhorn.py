@@ -35,8 +35,10 @@ class MyClient(discord.Client):
         self.time_of_last_honk = time.time() - 50
         self.ch_ft = asyncio.Future()
         self.role = role
-        if (role != 'honker' and role != 'proximity'):
+        if role not in ['honker', 'proximity']:
             raise RuntimeError('unknown role ' + role)
+        self.lookback_window = 2
+        self.cooldown_seconds = 50
 
     def blow_horn(self, secs):
         GPIO.output(pin, 1)
@@ -55,41 +57,41 @@ class MyClient(discord.Client):
             return
         await self.common_on_message(message)
         if (self.role == 'honker'):
-            await self.honker_on_message(self, message)
+            await self.honker_on_message(message)
 
     async def common_on_message(self, message):
         ch = message.channel
-        if message.content == 'ping' or message.content == 'Ping':
-            await ch.send('pong')
-        if message.content == 'stats' or message.content == 'Stats':
-            await ch.send('rssis: ' + ','.join(map(str, self.dq)) + str(self.avg_rssi))
+        if message.content in ['ping', 'Ping']:
+            await ch.send('role: ' + self.role + ' pong')
+        if message.content in ['stats', 'Stats']:
+            await ch.send('role: ' + self.role + ' rssis: ' + ','.join(map(str, self.dq)) + ' avg: ' + str(self.avg_rssi))
 
     async def honker_on_message(self, message):
         ch = message.channel
         if message.author.bot:
             # lets double check to prevent false positives
             seconds_since_last_honk = time.time() - self.time_of_last_honk
-            if len(self.dq) == lookback_window and self.avg_rssi >= -40 and seconds_since_last_honk > cooldown_seconds:
+            if len(self.dq) == self.lookback_window and self.avg_rssi >= -40 and seconds_since_last_honk > self.cooldown_seconds:
                 logging.info('honking the horn')
                 await self.ch.send('confirmed proximity rssi: %d' % self.avg_rssi)
             else:
                 await self.ch.send('not close enough rssi: %d' % self.avg_rssi)
                 return
 
-        if message.content == 'h1' or mesesage.content == 'H1':
-            blow_horn(0.1)
+        if message.content in ['h1', 'H1']:
+            self.blow_horn(0.1)
             await ch.send('0.1s')
-        elif message.content == 'h2' or mesesage.content == 'H2':
-            blow_horn(0.25)
+        elif message.content in ['h2', 'H2']:
+            self.blow_horn(0.25)
             await ch.send('0.25s')
-        elif message.content == 'h3' or mesesage.content == 'H3':
-            blow_horn(0.5)
+        elif message.content in ['h3', 'H3']:
+            self.blow_horn(0.5)
             await ch.send('0.5s')
-        elif message.content == 'h4' or mesesage.content == 'H4':
-            blow_horn(1.0)
+        elif message.content in ['h4', 'H4']:
+            self.blow_horn(1.0)
             await ch.send('1.0s')
-        elif message.content == 'h5' or mesesage.content == 'H5':
-            blow_horn(2.0)
+        elif message.content in ['h5', 'H5']:
+            self.blow_horn(2.0)
             await ch.send('2.0s')
 
     async def close(self):
@@ -108,7 +110,6 @@ class MyClient(discord.Client):
             await self.wait_until_ready()
             await self.ch_ft
             await self.ch.send('horn honker monitoring proximity')
-            cooldown_seconds = 50
 
             dev_id = 0  # the bluetooth device is hci0
             toggle_device(dev_id, True)
@@ -117,17 +118,16 @@ class MyClient(discord.Client):
             parse_le_advertising_events_init(self.sock)
             while True:
                 tpl =  parse_le_advertising_events_once(self.sock)
-                if (tpl):
+                if tpl:
                     mac_addr_str, adv_type, rssi = tpl
                 if mac_addr_str == '01:B6:EC:C6:44:9B':
                     self.dq.appendleft(rssi)
-                    lookback_window = 2
-                    if len(self.dq) > lookback_window:
-                      self.dq.pop()
+                    if len(self.dq) > self.lookback_window:
+                        self.dq.pop()
                     self.avg_rssi = sum(self.dq) / len(self.dq)
                     seconds_since_last_honk = time.time() - self.time_of_last_honk
                     logging.info('rssi: %d sslh %d' % (self.avg_rssi, seconds_since_last_honk))
-                    if self.role == 'proximity' and len(self.dq) == lookback_window and self.avg_rssi >= -40: # and seconds_since_last_honk > cooldown_seconds:
+                    if self.role == 'proximity' and len(self.dq) == self.lookback_window and self.avg_rssi >= -40: # and seconds_since_last_honk > self.cooldown_seconds:
                         logging.info('remote honking the horn')
                         await self.ch.send('rssi: %d' % self.avg_rssi)
                         self.time_of_last_honk = time.time()
