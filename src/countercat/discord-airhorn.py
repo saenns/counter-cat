@@ -62,7 +62,7 @@ class MyClient(discord.Client):
         if message.content == 'ping' or message.content == 'Ping':
             await ch.send('pong')
         if message.content == 'stats' or message.content == 'Stats':
-            await ch.send('rssis: ' + ','.join(self.dq) + str(self.avg_rssi))
+            await ch.send('rssis: ' + ','.join(map(str, self.dq)) + str(self.avg_rssi))
 
     async def honker_on_message(self, message):
         ch = message.channel
