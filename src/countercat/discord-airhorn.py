@@ -39,12 +39,16 @@ class MyClient(discord.Client):
             raise RuntimeError('unknown role ' + role)
         self.lookback_window = 2
         self.cooldown_seconds = 50
+        self.armed = True
 
     def blow_horn(self, secs):
-        GPIO.output(pin, 1)
-        time.sleep(secs)
-        GPIO.output(pin, 0)
-        self.time_of_last_honk = time.time()
+        if armed:
+            GPIO.output(pin, 1)
+            time.sleep(secs)
+            GPIO.output(pin, 0)
+            self.time_of_last_honk = time.time()
+        else:
+            logging.info('skip honk because disarmed')
 
     async def on_ready(self):
         self.ch = client.get_channel(929738879563612244)
@@ -69,7 +73,7 @@ class MyClient(discord.Client):
         if message.content in ['ping', 'Ping']:
             await ch.send('role: ' + self.role + ' pong')
         if message.content in ['stats', 'Stats']:
-            await ch.send('role: ' + self.role + ' rssis: ' + ','.join(map(str, self.dq)) + ' avg: ' + str(self.avg_rssi()))
+            await ch.send('role: ' + self.role + ' armed: ' + str(self.armed) + ' rssis: ' + ','.join(map(str, self.dq)) + ' avg: ' + str(self.avg_rssi()))
 
     async def honker_on_message(self, message):
         ch = message.channel
@@ -83,6 +87,12 @@ class MyClient(discord.Client):
                 await self.ch.send('not close enough rssi: %d' % self.avg_rssi())
                 return
 
+        if message.content in ['arm', 'Arm']:
+            self.armed = True
+            await self.ch.send('honker armed')
+        if message.content in ['disarm', 'Disarm']:
+            self.armed = False
+            await self.ch.send('honker disarmed')
         if message.content in ['h1', 'H1']:
             self.blow_horn(0.1)
             await ch.send('0.1s')
@@ -130,7 +140,7 @@ class MyClient(discord.Client):
                     if len(self.dq) > self.lookback_window:
                         self.dq.pop()
                     seconds_since_last_honk = time.time() - self.time_of_last_honk
-                    logging.info('rssi: %d sslh %d' % (self.avg_rssi(), seconds_since_last_honk))
+                    logging.info('armed: %r rssi: %d sslh %d' % (self.armed, self.avg_rssi(), seconds_since_last_honk))
                     if self.role == 'proximity' and len(self.dq) == self.lookback_window and self.avg_rssi() >= -40: # and seconds_since_last_honk > self.cooldown_seconds:
                         logging.info('remote honking the horn')
                         await self.ch.send('rssi: %d' % self.avg_rssi())
