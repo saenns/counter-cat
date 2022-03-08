@@ -30,6 +30,7 @@ class MyClient(discord.Client):
     def __init__(self, role):
         super().__init__(*[], **{})
         self.bg_task = self.loop.create_task(self.ble_loop())
+        self.ch = None
         self.ch_ft = asyncio.Future()
         self.dq = deque()
         self.time_of_last_honk = time.time() - 50
@@ -41,14 +42,24 @@ class MyClient(discord.Client):
         self.cooldown_seconds = 50
         self.armed = True
 
-    def blow_horn(self, secs):
+    async def blow_horn(self, message, secs):
+        if message.author.bot:
+            # lets double check proximity to prevent false positives
+            seconds_since_last_honk = time.time() - self.time_of_last_honk
+            avg_rssi = self.avg_rssi()
+            if not (len(self.dq) == self.lookback_window and avg_rssi >= -40 and seconds_since_last_honk > self.cooldown_seconds):
+                await self.ch.send('no honk because robot and not close enough rssi: %d' % self.avg_rssi())
+                return
+
         if self.armed:
             GPIO.output(pin, 1)
             time.sleep(secs)
             GPIO.output(pin, 0)
             self.time_of_last_honk = time.time()
+            await self.ch.send('honked for %d secs rssi: ' % (secs, avg_rssi))
         else:
-            logging.info('skip honk because disarmed')
+            await self.ch.send('no honk because disarmed')
+            logging.info('no honk because disarmed')
 
     async def on_ready(self):
         self.ch = client.get_channel(929738879563612244)
@@ -77,16 +88,6 @@ class MyClient(discord.Client):
 
     async def honker_on_message(self, message):
         ch = message.channel
-        if message.author.bot:
-            # lets double check to prevent false positives
-            seconds_since_last_honk = time.time() - self.time_of_last_honk
-            if len(self.dq) == self.lookback_window and self.avg_rssi() >= -40 and seconds_since_last_honk > self.cooldown_seconds:
-                logging.info('honking the horn')
-                await self.ch.send('confirmed proximity rssi: %d' % self.avg_rssi())
-            else:
-                await self.ch.send('not close enough rssi: %d' % self.avg_rssi())
-                return
-
         if message.content in ['arm', 'Arm']:
             self.armed = True
             await self.ch.send('honker armed')
@@ -94,20 +95,15 @@ class MyClient(discord.Client):
             self.armed = False
             await self.ch.send('honker disarmed')
         if message.content in ['h1', 'H1']:
-            self.blow_horn(0.1)
-            await ch.send('0.1s')
+            await self.blow_horn(message, 0.1)
         elif message.content in ['h2', 'H2']:
-            self.blow_horn(0.25)
-            await ch.send('0.25s')
+            await self.blow_horn(message, 0.25)
         elif message.content in ['h3', 'H3']:
-            self.blow_horn(0.5)
-            await ch.send('0.5s')
+            await self.blow_horn(message, 0.5)
         elif message.content in ['h4', 'H4']:
-            self.blow_horn(1.0)
-            await ch.send('1.0s')
+            await self.blow_horn(message, 1.0)
         elif message.content in ['h5', 'H5']:
-            self.blow_horn(2.0)
-            await ch.send('2.0s')
+            await self.blow_horn(message, 2.0)
 
     async def close(self):
         await self.ch.send('horn honker disconnecting')
