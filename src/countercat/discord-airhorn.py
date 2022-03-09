@@ -40,7 +40,7 @@ class MyClient(discord.Client):
             raise RuntimeError('unknown role ' + role)
         self.lookback_window = 2
         self.cooldown_seconds = 50
-        self.armed = True
+        self.armed = False
 
     async def blow_horn(self, message, secs):
         if message.author.bot:
