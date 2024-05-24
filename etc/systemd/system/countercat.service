@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=saenns
-ExecStart=/home/saenns/countercat/bin/countercat.sh
+ExecStart=/home/saenns/counter-cat/bin/countercat.sh
 Restart=on-failure
 # Other restart options: always, on-abort, etc
 # RestartSec=10s
