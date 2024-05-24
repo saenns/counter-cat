@@ -10,13 +10,9 @@ import asyncio
 import discord
 import sys
 import time
-import bluetooth._bluetooth as bluez
 import logging
 
 from collections import deque
-from bluetooth_common import (toggle_device,
-                             enable_le_scan, parse_le_advertising_events,parse_le_advertising_events_init,parse_le_advertising_events_once,
-                             disable_le_scan, raw_packet_to_str)
 
 logging.basicConfig(level='INFO')
 
@@ -36,7 +32,7 @@ class MyClient(discord.Client):
         self.time_of_last_honk = time.time() - 50
         self.ch_ft = asyncio.Future()
         self.role = role
-        if role not in ['honker', 'proximity']:
+        if role not in ['honker']:
             raise RuntimeError('unknown role ' + role)
         self.lookback_window = 2
         self.cooldown_seconds = 50
@@ -44,12 +40,7 @@ class MyClient(discord.Client):
 
     async def blow_horn(self, message, secs):
         if message.author.bot:
-            # lets double check proximity to prevent false positives
             seconds_since_last_honk = time.time() - self.time_of_last_honk
-            avg_rssi = self.avg_rssi()
-            if not (len(self.dq) == self.lookback_window and avg_rssi >= -40 and seconds_since_last_honk > self.cooldown_seconds):
-                await self.ch.send('no honk because robot and not close enough rssi: %d' % self.avg_rssi())
-                return
 
         if self.armed:
             GPIO.output(pin, 1)
@@ -116,44 +107,10 @@ class MyClient(discord.Client):
         disable_le_scan(self.sock)
         await super().close()
 
-    async def ble_loop(self):
-        try:
-            await self.wait_until_ready()
-            await self.ch_ft
-            await self.ch.send('horn honker monitoring proximity')
-
-            dev_id = 0  # the bluetooth device is hci0
-            toggle_device(dev_id, True)
-            self.sock = bluez.hci_open_dev(dev_id)
-            enable_le_scan(self.sock, filter_duplicates=False)
-            parse_le_advertising_events_init(self.sock)
-            while True:
-                tpl =  parse_le_advertising_events_once(self.sock)
-                if tpl:
-                    mac_addr_str, adv_type, rssi = tpl
-                if mac_addr_str == '01:B6:EC:C6:44:9B':
-                    self.dq.appendleft(rssi)
-                    if len(self.dq) > self.lookback_window:
-                        self.dq.pop()
-                    seconds_since_last_honk = time.time() - self.time_of_last_honk
-                    logging.info('armed: %r rssi: %d sslh %d' % (self.armed, self.avg_rssi(), seconds_since_last_honk))
-                    if self.role == 'proximity' and len(self.dq) == self.lookback_window and self.avg_rssi() >= -40: # and seconds_since_last_honk > self.cooldown_seconds:
-                        logging.info('remote honking the horn')
-                        await self.ch.send('rssi: %d' % self.avg_rssi())
-                        self.time_of_last_honk = time.time()
-                        await self.ch.send('h3')
-                await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            logging.info("closing the BLE loop")
-            return
-        except:
-            logging.exception("BLE loop failed")
-            raise
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Discord chatbot to monitor proximity and operate the air horn remotely')
-    parser.add_argument('--role', type=str, choices=['proximity', 'honker'], help='whether to act as remote proximity sensor or the horn operator')
+    parser.add_argument('--role', type=str, choices=['honker'], help='whether to act as remote proximity sensor or the horn operator')
     parser.add_argument('--token', type=str, required=True, help='Discord bot token')
     args = parser.parse_args()
     client = MyClient(args.role)
