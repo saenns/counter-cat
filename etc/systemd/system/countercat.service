@@ -1,0 +1,15 @@
+[Unit]
+Description=Counter Cat
+After=network.target
+
+[Service]
+Type=simple
+User=saenns
+ExecStart=/home/saenns/countercat/src/countercat/discord-airhorn.py --role honker --token OTQ2OTYyNTU4NjUxMzU5MzIy.GCCjQE.vnI6SM0nCndi9U6U405HxDF1U_fqy3At4dQuB4
+Restart=on-failure
+# Other restart options: always, on-abort, etc
+# RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+
