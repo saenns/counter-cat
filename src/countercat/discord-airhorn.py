@@ -113,5 +113,7 @@ if __name__ == "__main__":
     parser.add_argument('--role', type=str, choices=['honker'], help='whether to act as remote proximity sensor or the horn operator')
     parser.add_argument('--token', type=str, required=True, help='Discord bot token')
     args = parser.parse_args()
-    client = MyClient(args.role)
+	intents = discord.Intents.default()
+	intents.message_content = True
+    client = MyClient(args.role, intents=intents)
     client.run(args.token)
