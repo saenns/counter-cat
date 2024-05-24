@@ -2,6 +2,6 @@
 mkdir -p ~/bin
 cp src/countercat/*.py ~/bin/
 chmod +x ~/bin/*.py
-sudo pip3 install RPi.GPIO
-sudo pip3 install discord.py
-sudo pip3 install PyBluez
+pip3 install RPi.GPIO
+pip3 install discord.py
+pip3 install PyBluez
