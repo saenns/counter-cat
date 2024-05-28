@@ -23,7 +23,7 @@ GPIO.setup(pin, GPIO.OUT)
 
 class MyClient(discord.Client):
 
-    def __init__(self, role):
+    def __init__(self, role, intents):
         super().__init__(*[], **{})
         self.bg_task = self.loop.create_task(self.ble_loop())
         self.ch = None
