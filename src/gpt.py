@@ -1,5 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
+import RPi.GPIO as GPIO
 import base64
 import cv2
 import json
@@ -83,7 +84,11 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         content = json.loads(response.json()['choices'][0]['message']['content'])
         if content['answer']:
             logging.info('honking the horn')
-            requests.get("http://airhorn.my:8000/h1")
+            # requests.get("http://airhorn.my:8000/h1")
+            GPIO.output(pin, 1)
+            time.sleep(secs)
+            GPIO.output(pin, 0)
+            self.time_of_last_honk = time.time()
         else:
             logging.info('no cats on countertop')
         cap.release()
