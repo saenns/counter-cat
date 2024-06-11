@@ -78,7 +78,7 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         if content['answer']:
             logging.info('honking the horn')
             GPIO.output(pin, 1)
-            time.sleep(0.1)
+            time.sleep(0.2)
             GPIO.output(pin, 0)
             self.time_of_last_honk = time.time()
         else:

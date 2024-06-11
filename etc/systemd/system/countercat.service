@@ -3,6 +3,7 @@ Description=Counter Cat
 After=network.target
 
 [Service]
+WorkingDirectory=/home/saenns/counter-cat/
 Type=simple
 User=saenns
 ExecStart=/home/saenns/counter-cat/bin/countercat.sh
