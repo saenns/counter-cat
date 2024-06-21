@@ -5,51 +5,17 @@ import base64
 #import cv2
 import json
 import logging
-import requests
+# import requests
 import time
+import anthropic
 
 pin = 4
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(pin, GPIO.OUT)
 
-# OpenAI API Key
-def payload(base64_image):
-    return {
-        "model": "gpt-4o",
-        "response_format": { "type": "json_object" },
-        "messages": [
-          {
-            "role": "system",
-            "content": [
-              {
-                "type": "text",
-                "text": "You are an image analyzer.  You answer questions about the image with true or false in a json object with a boolean field called 'answer'."
-              }
-            ]
-          },
-          {
-            "role": "user",
-            "content": [
-              {
-                "type": "text",
-                "text": "Are there any cats on the countertops or tabletops in this image?"
-              },
-              {
-                "type": "image_url",
-                "image_url": {
-                  "url": f"data:image/jpeg;base64,{base64_image}"
-                }
-              }
-            ]
-          }
-        ],
-        "max_tokens": 300
-      }
-
-# Function to encode the image
-def encode_image(image_path):
-  with open(image_path, "rb") as image_file:
-    return base64.b64encode(image_file.read()).decode('utf-8')
+client = anthropic.Anthropic(
+    api_key="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",
+)
 
 class WebRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -64,18 +30,38 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         # logging.info(f'base64_image: {base64_image}')
         with open(image_path, 'wb') as imgf:
             imgf.write(base64.b64decode(base64_image))
-        api_key = "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"
-        headers = {
-          "Content-Type": "application/json",
-          "Authorization": f"Bearer {api_key}"
-        }
 
-        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload(base64_image))
+        logging.info(image_path)
 
-        logging.info(response.json())
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20240620",
+            max_tokens=1024,
+            # system="Answer questions about the image in json", # <-- system prompt
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type":  "image/jpeg",
+                                "data": base64_image,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": "Are there any cats on the countertops or tabletops in this image?  Please answer with a single word: yes or no"
+                        }
+                    ],
+                }
+            ],
+        )
 
-        content = json.loads(response.json()['choices'][0]['message']['content'])
-        if content['answer']:
+        logging.info(f'{message}')
+
+        # content = json.loads(response.json()['choices'][0]['message']['content'])
+        if message.content[0].text == 'Yes':
             logging.info('honking the horn')
             GPIO.output(pin, 1)
             time.sleep(0.2)
