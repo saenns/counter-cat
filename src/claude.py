@@ -38,7 +38,7 @@ for image_path in glob.glob('/Users/saenns/counter-cat/data/negative/*.jpg'):
                     },
                     {
                         "type": "text",
-                        "text": "Are there any cats on the countertops or tabletops in this image?  Please answer with a single word: yes or no"
+                        "text": "Are there any cats on the countertops or tabletops in this image? Remember that cabinets are not countertops.  Answer no if there are cats on top of the cabinets but not on the countertops. Otherwise answer yes. Please answer with a single word: yes or no"
                     }
                 ],
             }
