@@ -1,16 +1,22 @@
 [Unit]
 Description=Counter Cat
-After=network.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
-WorkingDirectory=/home/saenns/counter-cat/
 Type=simple
-User=saenns
-ExecStart=/home/saenns/counter-cat/bin/countercat.sh
-Restart=on-failure
-# Other restart options: always, on-abort, etc
-# RestartSec=10s
+User=countercat
+Group=countercat
+WorkingDirectory=/opt/counter-cat
+EnvironmentFile=/etc/counter-cat.env
+ExecStart=/opt/counter-cat/.venv/bin/counter-cat
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/counter-cat
 
 [Install]
 WantedBy=multi-user.target
-

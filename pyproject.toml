@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "counter-cat"
+version = "0.1.0"
+description = "A small Raspberry Pi service that detects cats on counters from camera snapshots."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Counter Cat contributors"}]
+keywords = ["raspberry-pi", "computer-vision", "anthropic", "cats"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = ["anthropic>=0.40,<1"]
+
+[project.optional-dependencies]
+gpio = ["RPi.GPIO>=0.7.1"]
+dev = ["pytest>=8", "ruff>=0.8"]
+
+[project.scripts]
+counter-cat = "countercat.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/countercat"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
