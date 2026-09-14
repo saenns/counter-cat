@@ -58,6 +58,21 @@ curl -X POST http://127.0.0.1:8000/classify \
 
 The maximum decoded image size is 10 MiB. JPEG and PNG are supported.
 
+## Evaluation snapshots
+
+The repository includes a small, hand-labelled sanity set under `data/`. The
+examples below show the intended decision boundary: countertops and tabletops
+are positive; floors, chairs, window sills, and cabinet tops are negative.
+These labels are expected outcomes, not a formal benchmark or a guarantee of
+model accuracy.
+
+| Snapshot | Expected classification | Rationale |
+| --- | --- | --- |
+| <img src="data/positive/cat%20on%20counter.jpg" alt="Cat on a kitchen counter" width="360"> | `true` | Cat is on a countertop. |
+| <img src="data/positive/miso%20on%20dining%20table.jpg" alt="Cat on a dining table" width="360"> | `true` | Tabletops count as a positive result. |
+| <img src="data/negative/cat%20on%20floor.jpg" alt="Cat on the floor" width="360"> | `false` | A cat on the floor should not activate the alarm. |
+| <img src="data/negative/oliver%20on%20cabintes.jpg" alt="Cat on top of kitchen cabinets" width="360"> | `false` | Cabinet tops are explicitly excluded. |
+
 ## Configuration
 
 | Variable | Default | Meaning |
